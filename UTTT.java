@@ -36,8 +36,8 @@ public class UTTT {
                     for (int j=0;j<3;j++){
                         for (int k=0;k<3;k++){
                             for (int l=0;l<3;l++){
-                                /*g.setColor(new Color((50*i)+50,(50*j)+50,(100)));
-                                g2.fillRect(x_start+27+(55*i + l*x_offset), y_start+27+(55*j + k*y_offset), 50, 50);*/
+                                g.setColor(new Color((50*i)+50,(50*j)+50,(100)));
+                                g2.fillRect(x_start+27+(55*i + l*x_offset), y_start+27+(55*j + k*y_offset), 50, 50);
                             }
                         }
                         /*g.setColor(new Color(75,75*i,75*j));
