@@ -46,12 +46,12 @@ public class UTTTServer extends JFrame implements UTTTConstants
            while(true)
            {
                jtaLog.append(new Date() + 
-                       "Waiting for players to join session number " + SessionNum + 'n');
+                       "Waiting for players to join session number " + SessionNum + '\n');
                //connect to player 1
                Socket player1 = serverSocket.accept();
                
                jtaLog.append(new Date() + 
-                       ": Player 1 has joined session number" + SessionNum + 'n');
+                       ": Player 1 has joined session number" + SessionNum + '\n');
                jtaLog.append("Player 1's IP is " + player1.getInetAddress().getHostAddress() + '\n');
                
                //Let the first player know they are player 1
@@ -93,7 +93,7 @@ class HandleASession implements Runnable
     private Socket player1, player2;
     
     //create and initialize cells (3 Dimensional Array)
-    private char[][][] cell = new char[3][3][9];    //either [3][3][3] or [3][3][9]
+    private char[][][][] cell = new char[3][3][3][3];    //either [3][3][3] or [3][3][9]
     
     private DataInputStream fromPl;
     private DataOutputStream toP1;
@@ -118,7 +118,7 @@ class HandleASession implements Runnable
                 {
                     for (int l=0;l<3;l++)
                     {
-                        cell[i][j][k] = ' ';
+                        cell[i][j][k][l] = ' ';
                     }
         }   }   }
     }
@@ -148,26 +148,32 @@ class HandleASession implements Runnable
                 int Continue = 4; //Continue state is represented as 4
                 char[] xCharArray = new char['X'];
                 char[] oCharArray = new char['O'];
+                final int gridNum = 9;
+      
                 
                 //get move from P1
                 int bigRow = fromPlayer1.readInt();
                 int bigColumn = fromPlayer1.readInt();
-                int smallGrid = fromPlayer1.readInt();
+                int smallRow = fromPlayer1.readInt();
+                int smallColumn = fromPlayer1.readInt();
                 
-                cell[bigRow][bigColumn][smallGrid] = 'X';
+                cell[bigRow][bigColumn][smallRow][smallColumn] = 'X';
                 
-                if(isWon(xCharArray, 'X'))
+                //TODO create logic for forcing player to play in specific small grids
+                
+                
+                if(isWon('X'))
                 {
                     toPlayer1.writeInt(Player1_Won);
                     toPlayer2.writeInt(Player1_Won);
-                    sendMove(toPlayer2, bigRow, bigColumn, smallGrid);
+                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
                     break;
                 }
                 else if (isFull())
                 {
                     toPlayer1.writeInt(Draw);
                     toPlayer2.writeInt(Draw);
-                    sendMove(toPlayer2, bigRow, bigColumn, smallGrid);
+                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
                     break;
                 }
                 else 
@@ -175,20 +181,21 @@ class HandleASession implements Runnable
                     //Tell player 2 its their turn
                     toPlayer2.writeInt(Continue);
                     //Send player 1's row, column, and grid
-                    sendMove(toPlayer2, bigRow, bigColumn, smallGrid);
+                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
                 }
                 
                 //Get player 2's move
                 bigRow = fromPlayer2.readInt();
                 bigColumn = fromPlayer2.readInt();
-                smallGrid = fromPlayer2.readInt();
-                cell[bigRow][bigColumn][smallGrid] = 'O';
+                smallRow = fromPlayer2.readInt();
+                smallColumn = fromPlayer2.readInt();
+                cell[bigRow][bigColumn][smallRow][smallColumn] = 'O';
                 
-                if(isWon(oCharArray,'O'))
+                if(isWon('O'))
                 {
                     toPlayer1.writeInt(Player2_Won);
                     toPlayer2.writeInt(Player2_Won);
-                    sendMove(toPlayer1, bigRow, bigColumn, smallGrid);
+                    sendMove(toPlayer1, bigRow, bigColumn, smallRow, smallColumn);
                     break;
                 }
                 else
@@ -196,7 +203,7 @@ class HandleASession implements Runnable
                     //Notify player 1 it's their turn
                     toPlayer1.writeInt(Continue);
                     //Send player 2's row, column, and grid
-                    sendMove(toPlayer1, bigRow, bigColumn, smallGrid);
+                    sendMove(toPlayer1, bigRow, bigColumn, smallRow, smallColumn);
                 }
             }
         }
@@ -205,20 +212,22 @@ class HandleASession implements Runnable
             System.err.println(ex);
         }        
     }
-        private void sendMove(DataOutputStream out, int row, int column, int grid) throws IOException
+        private void sendMove(DataOutputStream out, int bigRow, int bigColumn, int smallRow, int smallColumn) throws IOException
     {
-            out.writeInt(row);
-            out.writeInt(column);
-            out.writeInt(grid);
+            out.writeInt(bigRow);
+            out.writeInt(bigColumn);
+            out.writeInt(smallRow);
+            out.writeInt(smallColumn);
     }
         
         //find out if all the cells are taken
         private boolean isFull()
         {
-            for (int i = 0; i<3; i++)
-                for(int j = 0; j<3; j++)
-                    for (int k = 0; k<3; k++)
-                        if(cell[i][j][k] == ' ') //if any cells are empty
+            for (int i = 1; i<4; i++)
+                for(int j = 1; j<4; j++)
+                    for (int k = 1; k<4; k++)
+                        for(int l=1; l<4; l++)
+                        if(cell[i][j][k][l] == ' ') //if any cells or small grids are empty
             {
                 return false;
             }
@@ -226,15 +235,19 @@ class HandleASession implements Runnable
         }
         
         //Find out which player's token won
-        private boolean isWon (char[] token, char gridToken)
+        private boolean isWon (char gridToken)
         {
             //Check rows
-            for(int i = 0; i<3; i++)
-                if((cell[i][0]==token) && (cell[i][1]==token) && (cell[i][2]==token))
+            for(int i = 1; i<4; i++)
+                for(int x = 1; x<4; x++)
+                    for(int y = 1; y<4; y++)
+                if((cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken) && (cell[x][y][i][3]==gridToken))
                     {return true;}
             //Check columns
-            for(int j = 0; j<3; j++)
-                if((cell[0][j]==token) && (cell[1][j]==token) && (cell[2][j]==token))
+            for(int j = 1; j<4; j++)
+                for(int x = 1; x<4; x++)
+                    for(int y = 1; y<4; y++)
+                if((cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken) && (cell[x][y][3][j]==gridToken))
                     {return true;}
             /*Check small grids are filled
             for(int k = 0; k<9; k++)
@@ -242,36 +255,44 @@ class HandleASession implements Runnable
                     {return true;}
             */
             //Check major diagonal of small grid
-            if((cell[0][0]==token) && (cell[1][1]==token) && (cell[2][2]==token))
+            for(int x = 1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][3]==gridToken))
                 {return true;}
             //Check subdiagonal of small grid
-            if((cell[0][2]==token) && (cell[1][1]==token) && (cell[2][0]==token))
+            for(int x =1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[x][y][1][3]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][1]==gridToken))
                 {return true;}
             
             //Check big grid rows for 3
-            for(int x = 0; x<3; x++)
-                for(int z = 0; z<9; z++)
-                    if((cell[x][0][z]==gridToken) && (cell[x][1][z]==gridToken) && (cell[x][2][z]==gridToken))
-                        {return true;}
+            for(int i = 1; i<4; i++)
+                for(int x = 1; x<4; x++)
+                    for(int y = 1; y<4; y++)
+                        if((cell[1][i][x][y]==gridToken) && (cell[2][i][x][y]==gridToken) && (cell[3][i][x][y]==gridToken))
+                            {return true;}
                         
             //Check big grid columns for 3
-            for(int y = 0; y<3; y++)
-                for(int z =0; z<9; z++)
-                    if((cell[0][y][z]==gridToken) && (cell[1][y][z]==gridToken) && (cell[2][y][z])==gridToken)
-                        {return true;}
+            for(int j = 1; j<4; j++)
+                for(int x = 1; x<4; x++)
+                    for(int y =1; y<4; y++)
+                        if((cell[j][1][x][y]==gridToken) && (cell[j][2][x][y]==gridToken) && (cell[j][3][x][y])==gridToken)
+                            {return true;}
             
             //Check big grid major diagonal
-            if((cell[0][0][0]==gridToken) && (cell[1][1][1]==gridToken) && (cell[2][2][2]==gridToken))
-                {return true;}
+            for(int x = 1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[1][1][x][y]==gridToken) && (cell[2][2][x][y]==gridToken) && (cell[3][3][x][y]==gridToken))
+                        {return true;}
             
             //Check big grid subdiagonal
-            if((cell[0][0][2]==gridToken) && (cell[1][1][1]==gridToken) && (cell[2][0][0]==gridToken))
-                {return true;}
+            for(int x = 1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[1][3][x][y]==gridToken) && (cell[2][2][x][y]==gridToken) && (cell[3][1][x][y]==gridToken))
+                        {return true;}
             
             //Everything's checked, but no winners yet
             return false;
-            
-            //TODO create logic for forcing player to play in specific small grids
             
         }
             
