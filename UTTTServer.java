@@ -162,7 +162,7 @@ class HandleASession implements Runnable
                 //TODO create logic for forcing player to play in specific small grids
                 
                 
-                if(isWon('X'))
+                if(matchIsWon('X'))
                 {
                     toPlayer1.writeInt(Player1_Won);
                     toPlayer2.writeInt(Player1_Won);
@@ -191,7 +191,7 @@ class HandleASession implements Runnable
                 smallColumn = fromPlayer2.readInt();
                 cell[bigRow][bigColumn][smallRow][smallColumn] = 'O';
                 
-                if(isWon('O'))
+                if(matchIsWon('O'))
                 {
                     toPlayer1.writeInt(Player2_Won);
                     toPlayer2.writeInt(Player2_Won);
@@ -234,36 +234,9 @@ class HandleASession implements Runnable
             return true;
         }
         
-        //Find out which player's token won
-        private boolean isWon (char gridToken)
+        //Find out if a player has won the entire match
+        private boolean matchIsWon(char gridToken)
         {
-            //Check rows
-            for(int i = 1; i<4; i++)
-                for(int x = 1; x<4; x++)
-                    for(int y = 1; y<4; y++)
-                if((cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken) && (cell[x][y][i][3]==gridToken))
-                    {return true;}
-            //Check columns
-            for(int j = 1; j<4; j++)
-                for(int x = 1; x<4; x++)
-                    for(int y = 1; y<4; y++)
-                if((cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken) && (cell[x][y][3][j]==gridToken))
-                    {return true;}
-            /*Check small grids are filled
-            for(int k = 0; k<9; k++)
-                if((cell[0][0][k]==gridToken) && (cell[1][1][k]==gridToken) && (cell[2][2][k]==gridToken))
-                    {return true;}
-            */
-            //Check major diagonal of small grid
-            for(int x = 1; x<4; x++)
-                for(int y = 1; y<4; y++)
-                    if((cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][3]==gridToken))
-                {return true;}
-            //Check subdiagonal of small grid
-            for(int x =1; x<4; x++)
-                for(int y = 1; y<4; y++)
-                    if((cell[x][y][1][3]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][1]==gridToken))
-                {return true;}
             
             //Check big grid rows for 3
             for(int i = 1; i<4; i++)
@@ -290,6 +263,38 @@ class HandleASession implements Runnable
                 for(int y = 1; y<4; y++)
                     if((cell[1][3][x][y]==gridToken) && (cell[2][2][x][y]==gridToken) && (cell[3][1][x][y]==gridToken))
                         {return true;}
+            
+            return false;
+        }
+        
+        //Find out if a player has won a small grid
+        private boolean isWon(char gridToken)
+        {
+            //Check small grid rows
+            for(int i = 1; i<4; i++)
+                for(int x = 1; x<4; x++)
+                    for(int y = 1; y<4; y++)
+                if((cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken) && (cell[x][y][i][3]==gridToken))
+                    {return true;}
+            
+            //Check small grid columns
+            for(int j = 1; j<4; j++)
+                for(int x = 1; x<4; x++)
+                    for(int y = 1; y<4; y++)
+                if((cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken) && (cell[x][y][3][j]==gridToken))
+                    {return true;}
+            
+            //Check major diagonal of small grid
+            for(int x = 1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][3]==gridToken))
+                {return true;}
+            
+            //Check subdiagonal of small grid
+            for(int x =1; x<4; x++)
+                for(int y = 1; y<4; y++)
+                    if((cell[x][y][1][3]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][1]==gridToken))
+                {return true;}
             
             //Everything's checked, but no winners yet
             return false;
