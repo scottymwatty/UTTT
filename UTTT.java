@@ -54,8 +54,6 @@ public class UTTT{
             }
         }
 
-
-
         // Now the fun part
         JFrame jf = new JFrame(TITLE);
         Container cp = jf.getContentPane();
@@ -101,9 +99,13 @@ public class UTTT{
         cp.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
+            	//Display mouse click position and "send" to server
             	System.out.println(sendBoxPosition(e.getX(), e.getY()));
             	
-            	/*int x_start = 45;
+            	selectBox(e.getX(), e.getY(), new Color(0,0,255), cp); //changes box color to blue
+            	
+            	/* Hard coding for mouse clicks
+            	int x_start = 45;
                 int y_start = 45;
                 int y_offset = 230;
                 int x_offset = 230;
@@ -115,8 +117,7 @@ public class UTTT{
                 int my = e.getY() - y * y_offset - y_start;
                 int little_x = (mx - 27) / 55;
                 int little_y = (my - 27) / 55;
-                //selectBox(e.getX(), e.getY(), new Color(0,0,255), cp); //changes box color to blue
-                
+ 
                 //display exact location of mouse click within big box and little box
                 System.out.println("Mouse click location: " + (y+1) + ","+ (x+1) + "," + (little_y+1) + "," + (little_x+1)); 
                 */
@@ -247,12 +248,14 @@ public class UTTT{
         }
 
     }
-    
+    /*Sends box position to the server 
+     * Returns string for server to receive
+     */
     public static String sendBoxPosition(int x, int y) {
     	Box temp = findBox(x,y);
-    	if ( temp != null) {
+    	if (temp != null) { //if temp is not null, then display the position of the mouse
         	return (temp.getBigRow()+", " + temp.getBigCol()+ "| " + temp.getLittleRow()+ ", "+ temp.getLittleCol());
-    	} else {
+    	} else { //otherwise return nothing (empty string)
     		return "";
     	}
     }
