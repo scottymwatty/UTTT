@@ -69,7 +69,7 @@ public class UTTTServer extends JFrame implements UTTTConstants
                new DataOutputStream(player2.getOutputStream()).writeInt(Player2);
                
                //Display session and increment session #
-               jtaLog.append(new Date() + ": Begin thred for session number " + SessionNum++ + '\n');
+               jtaLog.append(new Date() + ": Begin thread for session number " + SessionNum++ + '\n');
                
                //Create thread for this session of 2 players
                HandleASession task = new HandleASession(player1,player2);
@@ -93,7 +93,7 @@ class HandleASession implements Runnable
     private Socket player1, player2;
     
     //create and initialize cells (3 Dimensional Array)
-    private char[][][][] cell = new char[3][3][3][3];    //either [3][3][3] or [3][3][9]
+    private char[][][][] cell = new char[3][3][3][3];    
     
     private DataInputStream fromPl;
     private DataOutputStream toP1;
@@ -148,32 +148,38 @@ class HandleASession implements Runnable
                 int Continue = 4; //Continue state is represented as 4
                 char[] xCharArray = new char['X'];
                 char[] oCharArray = new char['O'];
-                final int gridNum = 9;
       
                 
                 //get move from P1
-                int bigRow = fromPlayer1.readInt();
-                int bigColumn = fromPlayer1.readInt();
-                int smallRow = fromPlayer1.readInt();
-                int smallColumn = fromPlayer1.readInt();
-                
-                cell[bigRow][bigColumn][smallRow][smallColumn] = 'X';
-                
-                //TODO create logic for forcing player to play in specific small grids
-                
+               String input[] = fromPlayer1.readLine().split(",");
+               int bigRow = Integer.parseInt(input[0]);
+               int bigColumn = Integer.parseInt(input[1]);
+               int smallRow = Integer.parseInt(input[2]);
+               int smallColumn = Integer.parseInt(input[3]);
+  
+               cell[bigRow][bigColumn][smallRow][smallColumn] = 'X';
+               
+               //Reparse the cell array back into a string to be sent
+               String output1[] = new String[4];
+               output1[0] = Integer.toString(bigRow);
+               output1[1] = Integer.toString(bigColumn);
+               output1[2] = Integer.toString(smallRow);
+               output1[3] = Integer.toString(smallColumn);
+               
+               String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
                 
                 if(matchIsWon('X'))
                 {
                     toPlayer1.writeInt(Player1_Won);
                     toPlayer2.writeInt(Player1_Won);
-                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
+                    sendMove(toPlayer2, fileOutput1);
                     break;
                 }
                 else if (isFull())
                 {
                     toPlayer1.writeInt(Draw);
                     toPlayer2.writeInt(Draw);
-                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
+                    sendMove(toPlayer2, fileOutput1);
                     break;
                 }
                 else 
@@ -181,21 +187,32 @@ class HandleASession implements Runnable
                     //Tell player 2 its their turn
                     toPlayer2.writeInt(Continue);
                     //Send player 1's row, column, and grid
-                    sendMove(toPlayer2, bigRow, bigColumn, smallRow, smallColumn);
+                    sendMove(toPlayer2, fileOutput1);
                 }
                 
                 //Get player 2's move
-                bigRow = fromPlayer2.readInt();
-                bigColumn = fromPlayer2.readInt();
-                smallRow = fromPlayer2.readInt();
-                smallColumn = fromPlayer2.readInt();
+                //Unpack the string into an Integer Array (cell) to be utilized for logic
+                String input2[] = fromPlayer2.readLine().split(",");
+                int bigRow2 = Integer.parseInt(input2[0]);
+                int bigColumn2 = Integer.parseInt(input2[1]);
+                int smallRow2 = Integer.parseInt(input2[2]);
+                int smallColumn2 = Integer.parseInt(input[3]);
                 cell[bigRow][bigColumn][smallRow][smallColumn] = 'O';
+                
+                //Reparse the entire cell variable back into a string seperated by 4 commas to be sent 
+                String output2[] = new String[4];
+                output2[0] = Integer.toString(bigRow2);
+                output2[1] = Integer.toString(bigColumn2);
+                output2[2] = Integer.toString(smallRow2);
+                output2[3] = Integer.toString(smallColumn2);
+                
+                String fileOutput2 = output2[0].concat(output2[1].concat(output2[2]).concat(output2[3]));
                 
                 if(matchIsWon('O'))
                 {
                     toPlayer1.writeInt(Player2_Won);
                     toPlayer2.writeInt(Player2_Won);
-                    sendMove(toPlayer1, bigRow, bigColumn, smallRow, smallColumn);
+                    sendMove(toPlayer1, fileOutput2);
                     break;
                 }
                 else
@@ -203,7 +220,7 @@ class HandleASession implements Runnable
                     //Notify player 1 it's their turn
                     toPlayer1.writeInt(Continue);
                     //Send player 2's row, column, and grid
-                    sendMove(toPlayer1, bigRow, bigColumn, smallRow, smallColumn);
+                    sendMove(toPlayer1, fileOutput2);
                 }
             }
         }
@@ -212,12 +229,10 @@ class HandleASession implements Runnable
             System.err.println(ex);
         }        
     }
-        private void sendMove(DataOutputStream out, int bigRow, int bigColumn, int smallRow, int smallColumn) throws IOException
+        //TODO change this to only send a string to the client
+        private void sendMove(DataOutputStream out, String output) throws IOException
     {
-            out.writeInt(bigRow);
-            out.writeInt(bigColumn);
-            out.writeInt(smallRow);
-            out.writeInt(smallColumn);
+            out.writeChars(output);
     }
         
         //find out if all the cells are taken
@@ -227,7 +242,7 @@ class HandleASession implements Runnable
                 for(int j = 1; j<4; j++)
                     for (int k = 1; k<4; k++)
                         for(int l=1; l<4; l++)
-                        if(cell[i][j][k][l] == ' ') //if any cells or small grids are empty
+                        if(cell[i][j][k][l] == ' ') //if any cells or grids are filled
             {
                 return false;
             }
@@ -268,7 +283,7 @@ class HandleASession implements Runnable
         }
         
         //Find out if a player has won a small grid
-        private boolean isWon(char gridToken)
+        private boolean sGridisWon(char gridToken)
         {
             //Check small grid rows
             for(int i = 1; i<4; i++)
