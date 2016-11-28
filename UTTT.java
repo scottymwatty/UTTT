@@ -9,11 +9,16 @@ import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
 
-public class UTTT{
+import java.text.*;
+import java.io.*;
+
+public class UTTT {
  
+    //JFrame Variables
     public static final int WIDTH = 800;
     public static final int HEIGHT = 900;
     public static final String TITLE = "Ultamite Tic Tac Toe!";
+    //Box arrays
     public static Box newBoxes[][][][] = new Box[3][3][3][3]; 
     public static Box boxes[][][][] = new Box[3][3][3][3];
     public static Box big_boxes[][] = new Box[3][3];
@@ -27,11 +32,14 @@ public class UTTT{
     public static List<Line2D> big_x_moves = new ArrayList<Line2D>();
     public static Boolean off_on = true;
     public static String message = "Welcome to UTTT";
+    public static Boolean done = false;
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
         initilizeLines();
-        setupJFrame();
-        
+        Container cp = setupJFrame();
+        while (!done) {
+            readInput(cp);
+        }
     }
     
     class Box {
@@ -196,7 +204,7 @@ public class UTTT{
         }
     }
 
-    public static void setupJFrame() {
+    public static Container setupJFrame() {
         // Now the fun part
         JFrame jf = new JFrame(TITLE);
         Container cp = jf.getContentPane();
@@ -258,6 +266,7 @@ public class UTTT{
                 g2.setFont(font);
                 g2.drawString(message, 300 -(message.length() *18) ,100);
             }
+
         });
         
         // Now we add MouseListeners to that component
@@ -310,5 +319,34 @@ public class UTTT{
 
         jf.setSize(WIDTH, HEIGHT);
         jf.setVisible(true);
+        return cp;
+    }
+
+    public static void readInput(Container cp) throws IOException{
+        BufferedReader stdin = new BufferedReader (new InputStreamReader (System.in));
+        String input = stdin.readLine();
+        if (input.charAt(0) == '4') {
+            for (int i=1;i<input.length();i=i+4) {
+                System.out.println(i);
+                System.out.println(input.length());
+                if (input.charAt(i+2) != '0') {
+                    int a = input.charAt(i)-49;
+                    int b = input.charAt(i+1)-49;
+                    int c = input.charAt(i+2)-49;
+                    int d = input.charAt(i+3)-49;
+                    Box temp = boxes[a][b][c][d];
+                    x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
+                    x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
+                } else {
+                    int a = input.charAt(i)-49;
+                    int b = input.charAt(i+1)-49;
+                    Box temp = big_boxes[a][b];
+                    big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
+                    big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
+                }
+                cp.repaint();
+                
+            }
+        }
     }
 }
