@@ -166,7 +166,14 @@ class HandleASession implements Runnable
                output1[2] = Integer.toString(smallRow);
                output1[3] = Integer.toString(smallColumn);
                
-               String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
+               
+               //Implement for loop to decide what is sent
+               
+               
+                String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
+               
+               
+               
                 
                 if(matchIsWon('X'))
                 {
@@ -206,7 +213,8 @@ class HandleASession implements Runnable
                 output2[2] = Integer.toString(smallRow2);
                 output2[3] = Integer.toString(smallColumn2);
                 
-                String fileOutput2 = output2[0].concat(output2[1].concat(output2[2]).concat(output2[3]));
+                
+                String fileOutput2 = output2[0].concat(output2[1].concat(output2[2]).concat(output2[3]));   //need to add commas in between numbers
                 
                 if(matchIsWon('O'))
                 {
@@ -283,36 +291,58 @@ class HandleASession implements Runnable
         }
         
         //Find out if a player has won a small grid
-        private boolean sGridisWon(char gridToken)
+        private String sGridIsWon(char gridToken)
         {
-            //Check small grid rows
+            String bigCoor, ZeroZero;
+            ZeroZero = Integer.toString(00);
+            
+            //Check small grid rows and return the x,y coordinate that is won
             for(int i = 1; i<4; i++)
                 for(int x = 1; x<4; x++)
                     for(int y = 1; y<4; y++)
                 if((cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken) && (cell[x][y][i][3]==gridToken))
-                    {return true;}
+                    {
+                        String xCoord = Integer.toString(x);
+                        String yCoord = Integer.toString(y);
+                        bigCoor = xCoord.concat(yCoord);
+                        return bigCoor.concat(ZeroZero);
+                    }
             
-            //Check small grid columns
+            //Check small grid columns and return the x,y coordinate that is won
             for(int j = 1; j<4; j++)
                 for(int x = 1; x<4; x++)
                     for(int y = 1; y<4; y++)
                 if((cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken) && (cell[x][y][3][j]==gridToken))
-                    {return true;}
+                    {
+                        String xCoord = Integer.toString(x);
+                        String yCoord = Integer.toString(y);
+                        bigCoor = xCoord.concat(yCoord);
+                        return bigCoor.concat(ZeroZero);
+                    }
             
-            //Check major diagonal of small grid
+            //Check major diagonal of small grid and return the x,y coordinate that is won
             for(int x = 1; x<4; x++)
                 for(int y = 1; y<4; y++)
                     if((cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][3]==gridToken))
-                {return true;}
+                {
+                    String xCoord = Integer.toString(x);
+                    String yCoord = Integer.toString(y);
+                    bigCoor = xCoord.concat(yCoord);
+                    return bigCoor.concat(ZeroZero);
+                }
             
             //Check subdiagonal of small grid
             for(int x =1; x<4; x++)
                 for(int y = 1; y<4; y++)
                     if((cell[x][y][1][3]==gridToken) && (cell[x][y][2][2]==gridToken) && (cell[x][y][3][1]==gridToken))
-                {return true;}
+                {
+                    String xCoord = Integer.toString(x);
+                    String yCoord = Integer.toString(y);
+                    bigCoor = xCoord.concat(yCoord);
+                    return bigCoor.concat(ZeroZero);
+                }
             
-            //Everything's checked, but no winners yet
-            return false;
+            return null;
             
         }
             
