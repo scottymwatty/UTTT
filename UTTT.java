@@ -1,19 +1,55 @@
 import java.awt.*;
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
+
 import javax.swing.*;
+
 import java.util.List;
 import java.util.ArrayList;
-
 import java.text.*;
 import java.io.*;
+import java.net.Socket;
 
 public class UTTT {
  
+	// Indicate whether the player has the turn
+	  private boolean myTurn = false;
+
+	  // Indicate the token for the player
+	  private char myToken = ' ';
+
+	  // Indicate the token for the other player
+	  private char otherToken = ' ';
+
+	  // Create and initialize a title label
+	  private JLabel jlblTitle = new JLabel();
+
+	  // Create and initialize a status label
+	  private JLabel jlblStatus = new JLabel();
+
+	  // Indicate selected row and column by the current move
+	  private int rowSelected;
+	  private int columnSelected;
+
+	  // Input and output streams from/to server
+	  private DataInputStream fromServer;
+	  private DataOutputStream toServer;
+
+	  // Continue to play?
+	  private boolean continueToPlay = true;
+
+	  // Wait for the player to mark a cell
+	  private boolean waiting = true;
+
+	  // Indicate if it runs as application
+	  private boolean isStandAlone = false;
+
+	  // Host name or ip
+	  private String host = "localhost";
+
     //JFrame Variables
     public static final int WIDTH = 800;
     public static final int HEIGHT = 900;
@@ -41,6 +77,7 @@ public class UTTT {
             readInput(cp);
         }
     }
+    
     
     class Box {
         private int x, y, height, width, big_row, big_col, little_row, little_col;
@@ -170,6 +207,7 @@ public class UTTT {
     public static void initilizeLines(){
         //-----Initialize Lines-----
         UTTT uttt = new UTTT();
+        uttt.connectToServer();
         // everything is based off of these start and offset points,
         // which makes it easy to move everything if we want to
         int x_start = 45;
@@ -273,7 +311,7 @@ public class UTTT {
         cp.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //Display mouse click position and "send" to server
+                //Display mouse click position
                 //System.out.println(sendBoxPosition(e.getX(), e.getY()));
                 
                  //changes box color to blue
@@ -345,8 +383,27 @@ public class UTTT {
                     big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
                 }
                 cp.repaint();
-                
             }
+        }
+    }
+    
+    private void connectToServer() {
+        try {
+          // Create a socket to connect to the server
+          Socket socket;
+          if (isStandAlone)
+            socket = new Socket(host, 8000);
+          else
+            socket = new Socket("localhost", 8000);
+
+          // Create an input stream to receive data from the server
+          fromServer = new DataInputStream(socket.getInputStream());
+
+          // Create an output stream to send data to the server
+          toServer = new DataOutputStream(socket.getOutputStream());
+        }
+        catch (Exception ex) {
+          System.err.println(ex);
         }
     }
 }
