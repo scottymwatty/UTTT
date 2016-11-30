@@ -16,8 +16,8 @@ import java.io.*;
 public class UTTT {
  
     //JFrame Variables
-    public final int WIDTH = 800;
-    public final int HEIGHT = 900;
+    public final int WIDTH = 550;
+    public final int HEIGHT = 650;
     public final String TITLE = "Ultamite Tic Tac Toe!";
 
     //Box arrays
@@ -187,20 +187,20 @@ public class UTTT {
         UTTT uttt = new UTTT();
         // everything is based off of these start and offset points,
         // which makes it easy to move everything if we want to
-        int x_start = 45;
-        int y_start = 145;
-        int y_offset = 230;
-        int x_offset = 230;
-        drawLines.add(new Line2D.Float(x_start+223, y_start+5,   x_start+223, y_start+670));
-        drawLines.add(new Line2D.Float(x_start+453, y_start+5,   x_start+453, y_start+670));
-        drawLines.add(new Line2D.Float(x_start+5,   y_start+223, x_start+670, y_start+223));
-        drawLines.add(new Line2D.Float(x_start+5,   y_start+453, x_start+670, y_start+453));
+        int x_start = 32;
+        int y_start = 102;
+        int y_offset = 161;
+        int x_offset = 161;
+        drawLines.add(new Line2D.Float(x_start+156, y_start+4,   x_start+156, y_start+469));
+        drawLines.add(new Line2D.Float(x_start+317, y_start+4,   x_start+317, y_start+469));
+        drawLines.add(new Line2D.Float(x_start+4,   y_start+156, x_start+469, y_start+156));
+        drawLines.add(new Line2D.Float(x_start+4,   y_start+317, x_start+469, y_start+317));
         for (int i=0;i<3;i++){
             for (int j=0;j<3;j++){
-                drawLines.add(new Line2D.Float(x_start+79+(j*x_offset),  y_start+28+(i*y_offset),  x_start+79+(j*x_offset),  y_start+186+(i*y_offset)));
-                drawLines.add(new Line2D.Float(x_start+134+(j*x_offset), y_start+28+(i*y_offset),  x_start+134+(j*x_offset), y_start+186+(i*y_offset)));
-                drawLines.add(new Line2D.Float(x_start+28+(j*x_offset),  y_start+80+(i*y_offset),  x_start+186+(j*x_offset), y_start+80+(i*y_offset)));
-                drawLines.add(new Line2D.Float(x_start+28+(j*x_offset),  y_start+135+(i*y_offset), x_start+186+(j*x_offset), y_start+135+(i*y_offset)));
+                drawLines.add(new Line2D.Float(x_start+55+(j*x_offset),  y_start+20+(i*y_offset),  x_start+55+(j*x_offset),  y_start+130+(i*y_offset)));
+                drawLines.add(new Line2D.Float(x_start+94+(j*x_offset), y_start+20+(i*y_offset),  x_start+94+(j*x_offset), y_start+130+(i*y_offset)));
+                drawLines.add(new Line2D.Float(x_start+20+(j*x_offset),  y_start+56+(i*y_offset),  x_start+130+(j*x_offset), y_start+56+(i*y_offset)));
+                drawLines.add(new Line2D.Float(x_start+20+(j*x_offset),  y_start+95+(i*y_offset), x_start+130+(j*x_offset), y_start+95+(i*y_offset)));
             }
         }
         
@@ -211,10 +211,10 @@ public class UTTT {
             for (int j=0;j<3;j++){
                 for (int k=0;k<3;k++){
                     for (int l=0;l<3;l++){
-                        boxes[i][j][k][l] = uttt.new Box((x_start+27+(55*l + j*x_offset)), (y_start+27+(55*k + i*y_offset)), 50, 50, i+1, j+1, k+1, l+1);
+                        boxes[i][j][k][l] = uttt.new Box((x_start+18+(39*l + j*x_offset)), (y_start+19+(39*k + i*y_offset)), 34, 34, i+1, j+1, k+1, l+1);
                     }
                 }
-                big_boxes[i][j] = uttt.new Box(x_start+(j*x_offset),y_start+(i*y_offset),215,215, i+1, j+1, 0, 0);
+                big_boxes[i][j] = uttt.new Box(x_start+(j*x_offset),y_start+(i*y_offset),150,150, i+1, j+1, 0, 0);
             }
         }
     }
@@ -284,9 +284,9 @@ public class UTTT {
 
                 //---------Drawing Text---------
                 g.setColor(new Color(0,0,0));
-                Font font = new Font("Serif", Font.PLAIN, 50);
+                Font font = new Font("Serif", Font.PLAIN, 30);
                 g2.setFont(font);
-                g2.drawString(message, 100 ,100);
+                g2.drawString(message, 125 ,75);
             }
 
         });
