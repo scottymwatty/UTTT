@@ -100,7 +100,8 @@ class HandleASession implements Runnable
     private BufferedWriter toPlayer1, toPlayer2;
 
     //create and initialize cells (3 Dimensional Array)
-    private char[][][][] cell = new char[3][3][3][3];    
+    private char[][][][] cell = new char[3][3][3][3]; 
+    private char[][] bigBox = new char[3][3];
     
     private BufferedReader fromPl;
     private DataOutputStream toP1;
@@ -170,10 +171,6 @@ class HandleASession implements Runnable
                output1[1] = Integer.toString(bigColumn);
                output1[2] = Integer.toString(smallRow);
                output1[3] = Integer.toString(smallColumn);
-               
-               
-               //Implement for loop to decide what is sent
-               
                
                 //String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
                 String fileOutput1 = output1[0] + output1[1] + output1[2] + output1[3];
@@ -287,29 +284,53 @@ class HandleASession implements Runnable
             
             //Check big grid rows for 3
             for(int i = 0; i<3; i++)
+            {
+                if((bigBox[0][i]==gridToken) && (bigBox[1][i]==gridToken) && (bigBox[2][i]==gridToken))
+                {return true;}
+            }
+           /*for(int i = 0; i<3; i++)
                 for(int x = 0; x<3; x++)
                     for(int y = 0; y<3; y++)
-                        if((cell[0][i][x][y]==gridToken) && (cell[1][i][x][y]==gridToken) && (cell[2][i][x][y]==gridToken))
+                        if((cell[0][i][x][y]==gridToken) && (cell[1][i][x][y]==gridToken) && (cell[2][i][x][y]==gridToken)) //[i][x][y]
                             {return true;}
+            */
                         
             //Check big grid columns for 3
-            for(int j = 0; j<3; j++)
+            for(int i= 0; i<3; i++)
+            {
+                if((bigBox[i][0]==gridToken) && (bigBox[i][1]==gridToken) && (bigBox[i][2]==gridToken))
+                {return true;}
+            }
+            /*for(int j = 0; j<3; j++)
                 for(int x = 0; x<3; x++)
                     for(int y =0; y<3; y++)
-                        if((cell[j][0][x][y]==gridToken) && (cell[j][1][x][y]==gridToken) && (cell[j][2][x][y])==gridToken)
+                        if((cell[j][0][x][y]==gridToken) && (cell[j][1][x][y]==gridToken) && (cell[j][2][x][y])==gridToken) //[j][#][x][y]
                             {return true;}
+            */
             
             //Check big grid major diagonal
-            for(int x = 0; x<3; x++)
+            for(int i =0; i<3; i++)
+            {
+                if((bigBox[0][0]==gridToken) && (bigBox[1][1]==gridToken) && (bigBox[2][2]==gridToken))
+                {return true;}
+            }
+            /*for(int x = 0; x<3; x++)
                 for(int y = 0; y<3; y++)
-                    if((cell[0][0][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][2][x][y]==gridToken))
+                    if((cell[0][0][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][2][x][y]==gridToken)) //[x][y]
                         {return true;}
+            */
             
             //Check big grid subdiagonal
-            for(int x = 0; x<3; x++)
+            for(int i =0; i<3; i++)
+            {
+                if((bigBox[0][2]==gridToken) && (bigBox[1][1]==gridToken) && (bigBox[2][0]==gridToken))
+                {return true;}
+            }
+            /*for(int x = 0; x<3; x++)
                 for(int y = 0; y<3; y++)
-                    if((cell[0][2][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][0][x][y]==gridToken))
+                    if((cell[0][2][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][0][x][y]==gridToken))//[x][y]
                         {return true;}
+            */
             
             return false;
         }
@@ -376,9 +397,12 @@ class HandleASession implements Runnable
           int col = Character.getNumericValue(bigMove.charAt(1));
           row = row - 1;
           col = col - 1;
-          for(int x = 0; x<3; x++) {
-            for(int y = 0; y<3; y++) {
-              if (cell[x][y][row][col] == ' ') {
+          for(int x = 0; x<3; x++) 
+          {
+            for(int y = 0; y<3; y++) 
+            {
+              if (cell[x][y][row][col] == ' ') 
+              {
                 cell[x][y][row][col] = player;
                 output = output + (x+1) + (y+1) + (row+1) + (col+1);
               }
