@@ -1,87 +1,62 @@
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
-
 import javax.swing.*;
-
 import java.util.List;
 import java.util.ArrayList;
+import java.net.*;
+
 import java.text.*;
 import java.io.*;
-import java.net.Socket;
 
 public class UTTT {
  
-	// Indicate whether the player has the turn
-	  private boolean myTurn = false;
-
-	  // Indicate the token for the player
-	  private char myToken = ' ';
-
-	  // Indicate the token for the other player
-	  private char otherToken = ' ';
-
-	  // Create and initialize a title label
-	  private JLabel jlblTitle = new JLabel();
-
-	  // Create and initialize a status label
-	  private JLabel jlblStatus = new JLabel();
-
-	  // Indicate selected row and column by the current move
-	  private int rowSelected;
-	  private int columnSelected;
-
-	  // Input and output streams from/to server
-	  private DataInputStream fromServer;
-	  private DataOutputStream toServer;
-
-	  // Continue to play?
-	  private boolean continueToPlay = true;
-
-	  // Wait for the player to mark a cell
-	  private boolean waiting = true;
-
-	  // Indicate if it runs as application
-	  private boolean isStandAlone = false;
-
-	  // Host name or ip
-	  private String host = "localhost";
-
     //JFrame Variables
-    public static final int WIDTH = 800;
-    public static final int HEIGHT = 900;
-    public static final String TITLE = "Ultamite Tic Tac Toe!";
-    //Box arrays
-    public static Box newBoxes[][][][] = new Box[3][3][3][3]; 
-    public static Box boxes[][][][] = new Box[3][3][3][3];
-    public static Box big_boxes[][] = new Box[3][3];
-    //Variables used for drawing
-    public static List<Line2D> drawLines = new ArrayList<Line2D>();
-    public static Box hoverBox;
-    public static List<Box> availableToPlay = new ArrayList<Box>();
-    public static List<Ellipse2D> o_moves = new ArrayList<Ellipse2D>();
-    public static List<Ellipse2D> big_o_moves = new ArrayList<Ellipse2D>();
-    public static List<Line2D> x_moves = new ArrayList<Line2D>();
-    public static List<Line2D> big_x_moves = new ArrayList<Line2D>();
-    public static Boolean off_on = true;
-    public static String message = "Welcome to UTTT";
-    public static Boolean done = false;
+    public final int WIDTH = 800;
+    public final int HEIGHT = 900;
+    public final String TITLE = "Ultamite Tic Tac Toe!";
 
+    //Box arrays
+    public Box newBoxes[][][][] = new Box[3][3][3][3]; 
+    public Box boxes[][][][] = new Box[3][3][3][3];
+    public Box big_boxes[][] = new Box[3][3];
+
+    //Variables used for drawing
+    public List<Line2D> drawLines = new ArrayList<Line2D>();
+    public Box hoverBox;
+    public List<Box> availableToPlay = new ArrayList<Box>();
+    public List<Ellipse2D> o_moves = new ArrayList<Ellipse2D>();
+    public List<Ellipse2D> big_o_moves = new ArrayList<Ellipse2D>();
+    public List<Line2D> x_moves = new ArrayList<Line2D>();
+    public List<Line2D> big_x_moves = new ArrayList<Line2D>();
+    public String message = "Welcome to UTTT";
+    public static Boolean done = false;
+    public char player_symbol;
+    public Boolean my_turn = false;
+    public int row_to_play = 0, col_to_play = 0;
+
+    private BufferedReader fromServer;
+    private BufferedWriter toServer;
+
+    //-----The main loop-----
     public static void main(String[] args) throws IOException{
-        initilizeLines();
-        Container cp = setupJFrame();
+        UTTT uttt = new UTTT();
+        uttt.initilizeLines();
+        Container cp = uttt.setupJFrame();
+        uttt.connectToServer();
         while (!done) {
-            readInput(cp);
+            uttt.readInput(cp);
         }
     }
-    
     
     class Box {
         private int x, y, height, width, big_row, big_col, little_row, little_col;
         private Color color;
+        private Boolean taken;
         Box(int x, int y, int width, int height, int big_row, int big_col, int little_row, int little_col) {
             this.x = x;
             this.y = y;
@@ -91,6 +66,7 @@ public class UTTT {
             this.big_col = big_col;
             this.little_row = little_row;
             this.little_col = little_col;
+            taken = false;
             //System.out.println("("+x+", "+y+", "+(x+width)+", "+(y+height)+")");
 
         }
@@ -122,6 +98,12 @@ public class UTTT {
         public Color getColor(){
             return color;
         }
+        public Boolean isTaken(){
+            return taken;
+        }
+        public void setTaken(){
+            taken = true;
+        }
         // Ok, technically this is a setter, but it isn't called setColor, so it doesn't count
         public void changeColor(Color new_color){
             //Add this box to the drawHoverBoxes list
@@ -129,7 +111,7 @@ public class UTTT {
         }
     }
 
-    public static Box findBox(int x, int y)  { //We use this process quite a bit, so it makes sense to make it a function
+    public Box findBox(int x, int y)  { //We use this process quite a bit, so it makes sense to make it a function
         Boolean found = false;
         for (int i = 0; i<3; i++){
             for (int j = 0; j<3; j++){
@@ -143,7 +125,13 @@ public class UTTT {
                         if (y > top && y < bottom && x > left && x < right) {
                         	//System.out.println("Correct Location: " + (i+1) + ","+(j+1) + ","+(k+1)+","+(l+1));
                             found = true; 
-                        	return boxes[i][j][k][l];
+                            if (boxes[i][j][k][l].isTaken()){
+                                return null;
+                            } else if ((row_to_play == 0 && col_to_play == 0) || (boxes[i][j][k][l].getBigRow() == row_to_play && boxes[i][j][k][l].getBigCol() == col_to_play)) {
+                                return boxes[i][j][k][l];
+                            } else {
+                            	return null;
+                            }
                         }
                     }
                 }
@@ -156,58 +144,47 @@ public class UTTT {
     ** If we're still pointing at the same box, there's no need to repaint the screen,
     ** so only repaint if the old_box is different from the new box.
     */
-    public static void highlightBox(int x, int y, Color new_color, Container cp) {
-        Box old_box = hoverBox;
-        hoverBox = findBox(x,y);
-        if (old_box != hoverBox) {
-            if (hoverBox != null) {
-                hoverBox.changeColor(new_color);
-                //System.out.println(hoverBox.getBigRow()+", " + hoverBox.getBigCol()+ "| " + hoverBox.getLittleRow()+ ", "+ hoverBox.getLittleCol());
-                //if (hoverBox.getBigRow() != 2 || hoverBox.getBigCol() != 2) { //Demoing out how we can restrict them to play in the correct spot on the board
-                  //  hoverBox = null;
-                //}
+    public void highlightBox(int x, int y, Color new_color, Container cp) {
+        if (my_turn) {
+            Box old_box = hoverBox;
+            hoverBox = findBox(x,y);
+            if (old_box != hoverBox ) {
+                if (hoverBox != null) {
+                    hoverBox.changeColor(new_color);
+                    //System.out.println(hoverBox.getBigRow()+", " + hoverBox.getBigCol()+ "| " + hoverBox.getLittleRow()+ ", "+ hoverBox.getLittleCol());
+                    //if (hoverBox.getBigRow() != 2 || hoverBox.getBigCol() != 2) { //Demoing out how we can restrict them to play in the correct spot on the board
+                      //  hoverBox = null;
+                    //}
+                }
+                cp.repaint();
             }
-            cp.repaint();
         }
     }
     
-    public static void selectBox(int x, int y, Color new_color, Container cp) {
-        Box temp = findBox(x,y);
-        if (temp != null) {
-            if (off_on) {
-                //o_moves.add(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
-                temp = big_boxes[temp.getBigRow()-1][temp.getBigCol()-1];
-                big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
-                big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
-                message = "X's TURN";
-            } else {
-                /*x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
-                x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));*/
-                temp = big_boxes[temp.getBigRow()-1][temp.getBigCol()-1];
-                big_o_moves.add(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
-                message = "O's TURN";
-            }
-            off_on = !off_on;
-            cp.repaint();
+    public void selectBox(int x, int y, Color new_color, Container cp) throws IOException{
+        String move = sendBoxPosition(x,y);
+        if (move != "" && my_turn) {
+            toServer.write(move);
+            toServer.newLine();
+            toServer.flush();
         }
 
     }
     /*Sends box position to the server 
      * Returns string for server to receive
      */
-    public static String sendBoxPosition(int x, int y) {
+    public String sendBoxPosition(int x, int y) {
     	Box temp = findBox(x,y);
-    	if (temp != null) { //if temp is not null, then display the position of the mouse
-        	return (temp.getBigRow()+", " + temp.getBigCol()+ "| " + temp.getLittleRow()+ ", "+ temp.getLittleCol());
+    	if (temp != null && ((row_to_play == 0 && col_to_play == 0) || (temp.getBigRow() == row_to_play && temp.getBigCol() == col_to_play))) { //if temp is not null, then display the position of the mouse
+        	return (temp.getBigRow()+"," + temp.getBigCol()+ "," + temp.getLittleRow()+ ","+ temp.getLittleCol());
     	} else { //otherwise return nothing (empty string)
     		return "";
     	}
     }
 
-    public static void initilizeLines(){
+    public void initilizeLines(){
         //-----Initialize Lines-----
         UTTT uttt = new UTTT();
-        uttt.connectToServer();
         // everything is based off of these start and offset points,
         // which makes it easy to move everything if we want to
         int x_start = 45;
@@ -242,7 +219,7 @@ public class UTTT {
         }
     }
 
-    public static Container setupJFrame() {
+    public Container setupJFrame() {
         // Now the fun part
         JFrame jf = new JFrame(TITLE);
         Container cp = jf.getContentPane();
@@ -256,9 +233,9 @@ public class UTTT {
                 Graphics2D g2 = (Graphics2D) g;
 
                 //---Drawing Available Move----
+                g.setColor(new Color(50,210,50));
                 for (int i=0;i<availableToPlay.size();i++){
                     Box temp = availableToPlay.get(i);
-                    g.setColor(temp.getColor());
                     g2.fillRect(temp.getX(), temp.getY(), temp.getWidth(), temp.getHeight());
                 }
 
@@ -284,9 +261,16 @@ public class UTTT {
                 g2.setStroke(new BasicStroke(5));
                 g.setColor(new Color(0,0,0));
                 for (int i=0;i<o_moves.size();i++){
+                    if (i == o_moves.size()-1 && player_symbol == 'X' && my_turn){
+                        g.setColor(new Color(255,0,0));
+                    }
                     g2.draw(o_moves.get(i));
                 }
+                g.setColor(new Color(0,0,0));
                 for (int i=0;i<x_moves.size();i++){
+                    if (i >= x_moves.size()-2 && player_symbol == 'O' && my_turn){
+                        g.setColor(new Color(255,0,0));
+                    }
                     g2.draw(x_moves.get(i));
                 }
                 g2.setStroke(new BasicStroke(8));
@@ -299,10 +283,10 @@ public class UTTT {
                 }
 
                 //---------Drawing Text---------
-                g.setColor(new Color(185,75,255));
-                Font font = new Font("Serif", Font.PLAIN, 96);
+                g.setColor(new Color(0,0,0));
+                Font font = new Font("Serif", Font.PLAIN, 50);
                 g2.setFont(font);
-                g2.drawString(message, 300 -(message.length() *18) ,100);
+                g2.drawString(message, 100 ,100);
             }
 
         });
@@ -311,7 +295,7 @@ public class UTTT {
         cp.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //Display mouse click position
+                //Display mouse click position and "send" to server
                 //System.out.println(sendBoxPosition(e.getX(), e.getY()));
                 
                  //changes box color to blue
@@ -343,7 +327,11 @@ public class UTTT {
             public void mouseReleased(MouseEvent e) { }
             @Override
             public void mousePressed(MouseEvent e) {
-                selectBox(e.getX(), e.getY(), new Color(0,0,255), cp);
+                try {
+                    selectBox(e.getX(), e.getY(), new Color(0,0,255), cp);
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                }
             }
         });
         cp.addMouseMotionListener(new MouseMotionListener() {
@@ -360,50 +348,82 @@ public class UTTT {
         return cp;
     }
 
-    public static void readInput(Container cp) throws IOException{
-        BufferedReader stdin = new BufferedReader (new InputStreamReader (System.in));
-        String input = stdin.readLine();
-        if (input.charAt(0) == '4') {
-            for (int i=1;i<input.length();i=i+4) {
-                System.out.println(i);
-                System.out.println(input.length());
-                if (input.charAt(i+2) != '0') {
-                    int a = input.charAt(i)-49;
-                    int b = input.charAt(i+1)-49;
-                    int c = input.charAt(i+2)-49;
-                    int d = input.charAt(i+3)-49;
-                    Box temp = boxes[a][b][c][d];
+    public void connectToServer() {
+        try {
+            Socket socket = new Socket("localhost", 8001);
+            fromServer =  new BufferedReader (new InputStreamReader(socket.getInputStream()));
+            toServer =  new BufferedWriter (new OutputStreamWriter(socket.getOutputStream()));
+            message = "Waiting for the other player... ";
+            player_symbol = fromServer.readLine().charAt(0);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+    }
+
+    public void readInput(Container cp) throws IOException{
+        String input = fromServer.readLine();
+        if (input.charAt(0) == player_symbol) { 
+            my_turn = false;
+            hoverBox = null;
+        } else {
+            my_turn = true;
+        }
+        switch (input.charAt(1)) {
+            case '1' :
+                done = true;
+                message = (player_symbol == 'X') ? "You Win!!!" : "You loose!";
+                break;
+            case '2' :
+                done = true;
+                message = (player_symbol == 'O') ? "You Win!!!" : "You loose!";
+                break;
+            case '3' :
+                done = true;
+                message = "It's a draw!";
+                break;
+            case '4' :
+                done = false;
+                message = (my_turn) ? "Your Turn" : "Waiting for other player...";
+                break;
+        }
+        for (int i=2;i<input.length();i=i+4) {
+            if (i==2){
+                row_to_play = input.charAt(4)-48;
+                col_to_play = input.charAt(5)-48;
+                availableToPlay.clear();
+                if (my_turn) {
+                    availableToPlay.add(big_boxes[row_to_play-1][col_to_play-1]);
+                }
+            }
+            if (input.charAt(i+2) != '0') {
+                int a = input.charAt(i)-49;
+                int b = input.charAt(i+1)-49;
+                int c = input.charAt(i+2)-49;
+                int d = input.charAt(i+3)-49;
+                Box temp = boxes[a][b][c][d];
+                temp.setTaken();
+                if (input.charAt(0) == 'X') {
                     x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
                     x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
                 } else {
-                    int a = input.charAt(i)-49;
-                    int b = input.charAt(i+1)-49;
-                    Box temp = big_boxes[a][b];
+                    o_moves.add(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
+                }
+                
+            } else {
+                int a = input.charAt(i)-49;
+                int b = input.charAt(i+1)-49;
+                Box temp = big_boxes[a][b];
+                if (input.charAt(0) == 'X') {
                     big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
                     big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
+                } else {
+                    big_o_moves.add(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
                 }
-                cp.repaint();
             }
         }
+        cp.repaint();
     }
-    
-    private void connectToServer() {
-        try {
-          // Create a socket to connect to the server
-          Socket socket;
-          if (isStandAlone)
-            socket = new Socket(host, 8000);
-          else
-            socket = new Socket("localhost", 8000);
 
-          // Create an input stream to receive data from the server
-          fromServer = new DataInputStream(socket.getInputStream());
 
-          // Create an output stream to send data to the server
-          toServer = new DataOutputStream(socket.getOutputStream());
-        }
-        catch (Exception ex) {
-          System.err.println(ex);
-        }
-    }
 }
