@@ -134,7 +134,10 @@ class HandleASession implements Runnable
                     {
                         cell[i][j][k][l] = ' ';
                     }
-        }   }   }
+                }
+                bigBox[i][j] = ' ';
+            }
+        }
     }
     
     public void run()
@@ -175,10 +178,12 @@ class HandleASession implements Runnable
                 //String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
                 String fileOutput1 = output1[0] + output1[1] + output1[2] + output1[3];
                
-               
-                if (sGridIsWon('X') != null)
+               String won;
+                if ((won = sGridIsWon('X')) != null)
                 {
-                  fileOutput1 = "X" + Continue + fileOutput1 + sGridIsWon('X') + cascadeMoves('X', sGridIsWon('X'));
+                  System.out.println("YOU WON ONE 1!");
+                  System.out.println(won);
+                  fileOutput1 = "X" + Continue + fileOutput1 + won + cascadeMoves('X', won);
                   sendMove(fileOutput1);
                 } 
                 else if(matchIsWon('X'))
@@ -199,6 +204,7 @@ class HandleASession implements Runnable
                 }
                 else 
                 {
+                  System.out.println("YOU WON NOTHING");
                     //Tell player 2 its their turn
                     // toPlayer2.write(Continue);
                     //Send player 1's row, column, and grid
@@ -225,9 +231,10 @@ class HandleASession implements Runnable
                 
                 String fileOutput2 = output2[0] + output2[1] + output2[2]+ output2[3];   //need to add commas in between numbers
                 
-                if (sGridIsWon('O') != null)
+                if ((won = sGridIsWon('O')) != null)
                 {
-                  fileOutput2 = "O" + Continue + fileOutput2 + sGridIsWon('O') + cascadeMoves('O', sGridIsWon('O'));
+                  System.out.println("YOU WON ONE 2!");
+                  fileOutput2 = "O" + Continue + fileOutput2 + won + cascadeMoves('O', won);
                   sendMove(fileOutput2);
                 } 
                 else if(matchIsWon('O'))
@@ -240,6 +247,7 @@ class HandleASession implements Runnable
                 }
                 else
                 {
+                  System.out.println("YOU WON NOTHING");
                     //Notify player 1 it's their turn
                     // toPlayer1.write(Continue);
                     //Send player 2's row, column, and grid
@@ -347,10 +355,14 @@ class HandleASession implements Runnable
                     for(int y = 0; y<3; y++)
                 if((cell[x][y][i][0]==gridToken) && (cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken))
                     {
+                      if (bigBox[x][y]==' ') {
+                        System.out.println(x+" "+y);
                         String xCoord = Integer.toString(x+1);
                         String yCoord = Integer.toString(y+1);
                         bigCoor = xCoord.concat(yCoord);
+                        bigBox[x][y] = gridToken;
                         return bigCoor.concat(ZeroZero);
+                      }
                     }
             
             //Check small grid columns and return the x,y coordinate that is won
@@ -359,10 +371,14 @@ class HandleASession implements Runnable
                     for(int y = 0; y<3; y++)
                 if((cell[x][y][0][j]==gridToken) && (cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken))
                     {
+                      if (bigBox[x][y]==' ') {
+                        System.out.println(x+" "+y);
                         String xCoord = Integer.toString(x+1);
                         String yCoord = Integer.toString(y+1);
                         bigCoor = xCoord.concat(yCoord);
+                        bigBox[x][y] = gridToken;
                         return bigCoor.concat(ZeroZero);
+                      }
                     }
             
             //Check major diagonal of small grid and return the x,y coordinate that is won
@@ -370,10 +386,14 @@ class HandleASession implements Runnable
                 for(int y = 0; y<3; y++)
                     if((cell[x][y][0][0]==gridToken) && (cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken))
                 {
+                  if (bigBox[x][y]==' ') {
+                    System.out.println(x+" "+y);
                     String xCoord = Integer.toString(x+1);
                     String yCoord = Integer.toString(y+1);
                     bigCoor = xCoord.concat(yCoord);
+                    bigBox[x][y] = gridToken;
                     return bigCoor.concat(ZeroZero);
+                  }
                 }
             
             //Check subdiagonal of small grid
@@ -381,10 +401,14 @@ class HandleASession implements Runnable
                 for(int y = 0; y<3; y++)
                     if((cell[x][y][0][2]==gridToken) && (cell[x][y][1][1]==gridToken) && (cell[x][y][2][0]==gridToken))
                 {
+                  if (bigBox[x][y]==' ') {
+                    System.out.println(x+" "+y);
                     String xCoord = Integer.toString(x+1);
                     String yCoord = Integer.toString(y+1);
                     bigCoor = xCoord.concat(yCoord);
+                    bigBox[x][y] = gridToken;
                     return bigCoor.concat(ZeroZero);
+                  }
                 }
             
             return null;
@@ -397,6 +421,7 @@ class HandleASession implements Runnable
           int col = Character.getNumericValue(bigMove.charAt(1));
           row = row - 1;
           col = col - 1;
+
           for(int x = 0; x<3; x++) 
           {
             for(int y = 0; y<3; y++) 
