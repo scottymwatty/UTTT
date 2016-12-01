@@ -24,6 +24,7 @@ public class UTTT {
     public Box newBoxes[][][][] = new Box[3][3][3][3]; 
     public Box boxes[][][][] = new Box[3][3][3][3];
     public Box big_boxes[][] = new Box[3][3];
+    private char big_box_move[][] = new char[3][3];
 
     //Variables used for drawing
     public List<Line2D> drawLines = new ArrayList<Line2D>();
@@ -125,7 +126,7 @@ public class UTTT {
                         if (y > top && y < bottom && x > left && x < right) {
                         	//System.out.println("Correct Location: " + (i+1) + ","+(j+1) + ","+(k+1)+","+(l+1));
                             found = true; 
-                            if (boxes[i][j][k][l].isTaken()){
+                            if (boxes[i][j][k][l].isTaken() || big_box_move[i][j] != ' ') {
                                 return null;
                             } else if ((row_to_play == 0 && col_to_play == 0) || (boxes[i][j][k][l].getBigRow() == row_to_play && boxes[i][j][k][l].getBigCol() == col_to_play)) {
                                 return boxes[i][j][k][l];
@@ -215,6 +216,7 @@ public class UTTT {
                     }
                 }
                 big_boxes[i][j] = uttt.new Box(x_start+(j*x_offset),y_start+(i*y_offset),150,150, i+1, j+1, 0, 0);
+                big_box_move[i][j] = ' ';
             }
         }
     }
@@ -294,30 +296,7 @@ public class UTTT {
         // Now we add MouseListeners to that component
         cp.addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                //Display mouse click position and "send" to server
-                //System.out.println(sendBoxPosition(e.getX(), e.getY()));
-                
-                 //changes box color to blue
-                
-                /* Hard coding for mouse clicks
-                int x_start = 45;
-                int y_start = 45;
-                int y_offset = 230;
-                int x_offset = 230;
-                  
-                //create variables for big box and small box sizes
-                int x = (e.getX() - x_start) / x_offset; 
-                int y = (e.getY() - y_start) / y_offset;
-                int mx = e.getX() - x * x_offset - x_start;
-                int my = e.getY() - y * y_offset - y_start;
-                int little_x = (mx - 27) / 55;
-                int little_y = (my - 27) / 55;
- 
-                //display exact location of mouse click within big box and little box
-                System.out.println("Mouse click location: " + (y+1) + ","+ (x+1) + "," + (little_y+1) + "," + (little_x+1)); 
-                */
-            }
+            public void mouseClicked(MouseEvent e) { }
             //Unused methods, but still need to override them
             @Override
             public void mouseEntered(MouseEvent e) { }
@@ -363,7 +342,7 @@ public class UTTT {
 
     public void readInput(Container cp) throws IOException{
         final String input = fromServer.readLine();
-        //System.out.println(input);
+        System.out.println(input);
         if (input.charAt(0) == player_symbol) { 
             my_turn = false;
             hoverBox = null;
@@ -373,7 +352,7 @@ public class UTTT {
         switch (input.charAt(1)) {
             case '1' :
                 done = true;
-                message = (player_symbol == 'X') ? "You Win!!!" : "You loose!";
+                message = (player_symbol == 'X') ? "You Win!!!" : "You lose!";
                 break;
             case '2' :
                 done = true;
@@ -389,22 +368,6 @@ public class UTTT {
                 break;
         }
         for (int i=2;i<input.length();i=i+4) {
-            if (i==2){
-                row_to_play = input.charAt(4)-48;
-                col_to_play = input.charAt(5)-48;
-                availableToPlay.clear();
-                Box temp = big_boxes[row_to_play-1][col_to_play-1];
-                Boolean isTakenBigX = big_x_moves.contains(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
-                Boolean isTakenBigO = big_o_moves.contains(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
-                if (!isTakenBigX && !isTakenBigO) {
-                	if (my_turn) {
-                		availableToPlay.add(big_boxes[row_to_play-1][col_to_play-1]);
-                	}
-                } else {
-                	row_to_play = 0;
-                	col_to_play = 0;
-                }
-            }
             if (input.charAt(i+2) != '0') {
                 int a = input.charAt(i)-49;
                 int b = input.charAt(i+1)-49;
@@ -423,12 +386,33 @@ public class UTTT {
                 int a = input.charAt(i)-49;
                 int b = input.charAt(i+1)-49;
                 Box temp = big_boxes[a][b];
+                big_box_move[a][b] = input.charAt(0);
                 if (input.charAt(0) == 'X') {
                     big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
                     big_x_moves.add(new Line2D.Float(temp.getX()+5, temp.getY()+temp.getHeight()-5, temp.getX()+temp.getWidth()-5, temp.getY()+5));
                 } else {
                     big_o_moves.add(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
                 }
+            }
+        }
+        if (input.length() != 2) {
+            row_to_play = input.charAt(4)-48;
+            col_to_play = input.charAt(5)-48;
+            availableToPlay.clear();
+            if (big_box_move[row_to_play-1][col_to_play-1] == ' ') {
+                if (my_turn) {
+                    availableToPlay.add(big_boxes[row_to_play-1][col_to_play-1]);
+                }
+            } else {
+                for (int i=0; i<3; i++) {
+                    for (int j=0; j<3; j++){
+                        if (big_box_move[i][j] == ' ' && my_turn) {
+                            availableToPlay.add(big_boxes[i][j]);
+                        }
+                    }
+                }
+                row_to_play = 0;
+                col_to_play = 0;
             }
         }
         cp.repaint();
