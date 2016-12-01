@@ -304,7 +304,7 @@ class HandleASession implements Runnable
             */
                         
             //Check big grid columns for 3
-            for(int i= 0; i<3; i++)
+            for(int i = 0; i<3; i++)
             {
                 if((bigBox[i][0]==gridToken) && (bigBox[i][1]==gridToken) && (bigBox[i][2]==gridToken))
                 {return true;}
@@ -432,6 +432,11 @@ class HandleASession implements Runnable
                 output = output + (x+1) + (y+1) + (row+1) + (col+1);
               }
             }
+          }
+          String won;
+          if((won = sGridIsWon(player)) != null)
+          {
+              output = output + won + cascadeMoves(player, won);
           }
           return output;
         }
