@@ -142,6 +142,23 @@ class HandleASession implements Runnable, UTTTConstants
     
     public void run()
     {
+     while(true)
+       {
+         for (int i=0;i<3;i++)
+        {
+            for (int j=0;j<3;j++)
+            {
+                for (int k=0;k<3;k++)
+                {
+                    for (int l=0;l<3;l++)
+                    {
+                        cell[i][j][k][l] = ' ';
+                    }
+                }
+                bigBox[i][j] = ' ';
+            }
+        }
+           
         try
         {   
             //Notify player1 to start
@@ -240,12 +257,29 @@ class HandleASession implements Runnable, UTTTConstants
                     sendMove(fileOutput2);
                 }
             }
+          String p1Again = fromPlayer1.readLine();
+          String p2Again = fromPlayer2.readLine();
+          
+          if((!p1Again.equals("again")) || (!p2Again.equals("again")))
+          {
+              break;
+          }
+          
         }
         catch(IOException ex)
         {
             System.err.println(ex);
-        }        
+        }  
+        
+        
+      }
     }
+    
+    
+    
+    
+    
+    
         //send the move as a string to parsed by client
         private void sendMove(String output) throws IOException
     {
