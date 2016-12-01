@@ -170,9 +170,7 @@ class HandleASession implements Runnable, UTTTConstants
                String won;
                 if ((won = sGridIsWon('X')) != null)
                 {
-                  System.out.println(won);
-                  fileOutput1 = "X" + Continue + fileOutput1 + won + cascadeMoves('X', won);
-                  sendMove(fileOutput1);
+                  fileOutput1 = fileOutput1 + won + cascadeMoves('X', won);
                   
                    if(matchIsWon('X'))
                 {
@@ -180,6 +178,11 @@ class HandleASession implements Runnable, UTTTConstants
                     sendMove(fileOutput1);
                     break;
                 }
+                   else
+                   {
+                       fileOutput1 = "X" + Continue + fileOutput1;
+                       sendMove(fileOutput1);
+                   }
                 } 
                 
                 else if (isFull())
@@ -215,7 +218,7 @@ class HandleASession implements Runnable, UTTTConstants
                 
                 if ((won = sGridIsWon('O')) != null)
                 {
-                  fileOutput2 = "O" + Continue + fileOutput2 + won + cascadeMoves('O', won);
+                  fileOutput2 = fileOutput2 + won + cascadeMoves('O', won);
                   sendMove(fileOutput2);
                   
                   if(matchIsWon('O'))
@@ -224,8 +227,13 @@ class HandleASession implements Runnable, UTTTConstants
                     sendMove(fileOutput2);
                     break;
                 }
+                  else
+                  {
+                      fileOutput2 = "O" + Continue + fileOutput2;
+                      sendMove(fileOutput2);
+                  }
+                
                 } 
- 
                 else
                 {
                     fileOutput2 = "O" + Continue + fileOutput2;
@@ -238,7 +246,7 @@ class HandleASession implements Runnable, UTTTConstants
             System.err.println(ex);
         }        
     }
-        //TODO change this to only send a string to the client
+        //send the move as a string to parsed by client
         private void sendMove(String output) throws IOException
     {
             toPlayer1.write(output);
