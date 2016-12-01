@@ -46,7 +46,7 @@ public class UTTT {
     public static void main(String[] args) throws IOException{
         UTTT uttt = new UTTT();
         uttt.initilizeLines();
-        Container cp = uttt.setupJFrame();
+        final Container cp = uttt.setupJFrame();
         uttt.connectToServer();
         while (!done) {
             uttt.readInput(cp);
@@ -362,7 +362,8 @@ public class UTTT {
     }
 
     public void readInput(Container cp) throws IOException{
-        String input = fromServer.readLine();
+        final String input = fromServer.readLine();
+        //System.out.println(input);
         if (input.charAt(0) == player_symbol) { 
             my_turn = false;
             hoverBox = null;
@@ -392,8 +393,16 @@ public class UTTT {
                 row_to_play = input.charAt(4)-48;
                 col_to_play = input.charAt(5)-48;
                 availableToPlay.clear();
-                if (my_turn) {
-                    availableToPlay.add(big_boxes[row_to_play-1][col_to_play-1]);
+                Box temp = big_boxes[row_to_play-1][col_to_play-1];
+                Boolean isTakenBigX = big_x_moves.contains(new Line2D.Float(temp.getX()+5, temp.getY()+5, temp.getX()+temp.getWidth()-5, temp.getY()+temp.getHeight()-5));
+                Boolean isTakenBigO = big_o_moves.contains(new Ellipse2D.Double(temp.getX()+5, temp.getY()+5, temp.getWidth()-10, temp.getHeight()-10));
+                if (!isTakenBigX && !isTakenBigO) {
+                	if (my_turn) {
+                		availableToPlay.add(big_boxes[row_to_play-1][col_to_play-1]);
+                	}
+                } else {
+                	row_to_play = 0;
+                	col_to_play = 0;
                 }
             }
             if (input.charAt(i+2) != '0') {
