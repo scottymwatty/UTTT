@@ -93,7 +93,7 @@ public class UTTTServer extends JFrame implements UTTTConstants
    }
 }
 
-class HandleASession implements Runnable
+class HandleASession implements Runnable, UTTTConstants
 {
     private Socket player1, player2;
     private BufferedReader fromPlayer1, fromPlayer2;
@@ -149,16 +149,6 @@ class HandleASession implements Runnable
             
             while(true)
             {
-                //Global variables (aren't transferring in from UTTTConstants file, so have to declare here...redundant)
-                int Player1 = 1;  //Player 1 represented as 1
-                int Player2 = 2;  //Player 2 represented as 2
-                int Player1_Won = 1;  //Player 1 winning is 1
-                int Player2_Won = 2;  //Player 2 winning is 2
-                int Draw = 3;     //Draw is represented as 3
-                int Continue = 4; //Continue state is represented as 4
-                char[] xCharArray = new char['X'];
-                char[] oCharArray = new char['O'];
-      
                 
                 //get move from P1
                String input[] = fromPlayer1.readLine().split(",");
@@ -175,13 +165,11 @@ class HandleASession implements Runnable
                output1[2] = Integer.toString(smallRow);
                output1[3] = Integer.toString(smallColumn);
                
-                //String fileOutput1 = output1[0].concat(output1[1].concat(output1[2]).concat(output1[3]));
                 String fileOutput1 = output1[0] + output1[1] + output1[2] + output1[3];
                
                String won;
                 if ((won = sGridIsWon('X')) != null)
                 {
-                  System.out.println("YOU WON ONE 1!");
                   System.out.println(won);
                   fileOutput1 = "X" + Continue + fileOutput1 + won + cascadeMoves('X', won);
                   sendMove(fileOutput1);
@@ -196,18 +184,12 @@ class HandleASession implements Runnable
                 
                 else if (isFull())
                 {
-                    // toPlayer1.write(Draw);
-                    // toPlayer2.write(Draw);
                     fileOutput1 = "X" + Draw + fileOutput1;
                     sendMove(fileOutput1);
                     break;
                 }
                 else 
                 {
-                  System.out.println("YOU WON NOTHING");
-                    //Tell player 2 its their turn
-                    // toPlayer2.write(Continue);
-                    //Send player 1's row, column, and grid
                     fileOutput1 = "X" + Continue + fileOutput1;
                     sendMove(fileOutput1);
                 }
@@ -233,14 +215,11 @@ class HandleASession implements Runnable
                 
                 if ((won = sGridIsWon('O')) != null)
                 {
-                  System.out.println("YOU WON ONE 2!");
                   fileOutput2 = "O" + Continue + fileOutput2 + won + cascadeMoves('O', won);
                   sendMove(fileOutput2);
                   
                   if(matchIsWon('O'))
                 {
-                    // toPlayer1.write(Player2_Won);
-                    // toPlayer2.write(Player2_Won);
                     fileOutput2 = "O" + Player2_Won + fileOutput2;
                     sendMove(fileOutput2);
                     break;
@@ -249,10 +228,6 @@ class HandleASession implements Runnable
  
                 else
                 {
-                  System.out.println("YOU WON NOTHING");
-                    //Notify player 1 it's their turn
-                    // toPlayer1.write(Continue);
-                    //Send player 2's row, column, and grid
                     fileOutput2 = "O" + Continue + fileOutput2;
                     sendMove(fileOutput2);
                 }
@@ -298,12 +273,6 @@ class HandleASession implements Runnable
                 if((bigBox[0][i]==gridToken) && (bigBox[1][i]==gridToken) && (bigBox[2][i]==gridToken))
                 {return true;}
             }
-           /*for(int i = 0; i<3; i++)
-                for(int x = 0; x<3; x++)
-                    for(int y = 0; y<3; y++)
-                        if((cell[0][i][x][y]==gridToken) && (cell[1][i][x][y]==gridToken) && (cell[2][i][x][y]==gridToken)) //[i][x][y]
-                            {return true;}
-            */
                         
             //Check big grid columns for 3
             for(int i = 0; i<3; i++)
@@ -311,12 +280,6 @@ class HandleASession implements Runnable
                 if((bigBox[i][0]==gridToken) && (bigBox[i][1]==gridToken) && (bigBox[i][2]==gridToken))
                 {return true;}
             }
-            /*for(int j = 0; j<3; j++)
-                for(int x = 0; x<3; x++)
-                    for(int y =0; y<3; y++)
-                        if((cell[j][0][x][y]==gridToken) && (cell[j][1][x][y]==gridToken) && (cell[j][2][x][y])==gridToken) //[j][#][x][y]
-                            {return true;}
-            */
             
             //Check big grid major diagonal
             for(int i =0; i<3; i++)
@@ -324,11 +287,6 @@ class HandleASession implements Runnable
                 if((bigBox[0][0]==gridToken) && (bigBox[1][1]==gridToken) && (bigBox[2][2]==gridToken))
                 {return true;}
             }
-            /*for(int x = 0; x<3; x++)
-                for(int y = 0; y<3; y++)
-                    if((cell[0][0][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][2][x][y]==gridToken)) //[x][y]
-                        {return true;}
-            */
             
             //Check big grid subdiagonal
             for(int i =0; i<3; i++)
@@ -336,11 +294,6 @@ class HandleASession implements Runnable
                 if((bigBox[0][2]==gridToken) && (bigBox[1][1]==gridToken) && (bigBox[2][0]==gridToken))
                 {return true;}
             }
-            /*for(int x = 0; x<3; x++)
-                for(int y = 0; y<3; y++)
-                    if((cell[0][2][x][y]==gridToken) && (cell[1][1][x][y]==gridToken) && (cell[2][0][x][y]==gridToken))//[x][y]
-                        {return true;}
-            */
             
             return false;
         }
