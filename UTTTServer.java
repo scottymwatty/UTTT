@@ -29,7 +29,7 @@ public class UTTTServer extends JFrame implements UTTTConstants
        
        //Define parameters of GUI (close, size, title, visibility)
        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-       setSize(800,800);
+       setSize(550,650);
        setTitle("Ultimate Tic Tac Toe Server");
        setVisible(true);
        
@@ -185,15 +185,15 @@ class HandleASession implements Runnable
                   System.out.println(won);
                   fileOutput1 = "X" + Continue + fileOutput1 + won + cascadeMoves('X', won);
                   sendMove(fileOutput1);
-                } 
-                else if(matchIsWon('X'))
+                  
+                   if(matchIsWon('X'))
                 {
-                    // toPlayer1.write(Player1_Won);
-                    // toPlayer2.write(Player1_Won);
                     fileOutput1 = "X" + Player1_Won + fileOutput1;
                     sendMove(fileOutput1);
                     break;
                 }
+                } 
+                
                 else if (isFull())
                 {
                     // toPlayer1.write(Draw);
@@ -236,8 +236,8 @@ class HandleASession implements Runnable
                   System.out.println("YOU WON ONE 2!");
                   fileOutput2 = "O" + Continue + fileOutput2 + won + cascadeMoves('O', won);
                   sendMove(fileOutput2);
-                } 
-                else if(matchIsWon('O'))
+                  
+                  if(matchIsWon('O'))
                 {
                     // toPlayer1.write(Player2_Won);
                     // toPlayer2.write(Player2_Won);
@@ -245,6 +245,8 @@ class HandleASession implements Runnable
                     sendMove(fileOutput2);
                     break;
                 }
+                } 
+ 
                 else
                 {
                   System.out.println("YOU WON NOTHING");
