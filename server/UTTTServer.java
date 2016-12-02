@@ -236,7 +236,6 @@ class HandleASession implements Runnable, UTTTConstants
                 if ((won = sGridIsWon('O')) != null)
                 {
                   fileOutput2 = fileOutput2 + won + cascadeMoves('O', won);
-                  sendMove(fileOutput2);
                   
                   if(matchIsWon('O'))
                 {
@@ -269,6 +268,7 @@ class HandleASession implements Runnable, UTTTConstants
         catch(IOException ex)
         {
             System.err.println(ex);
+            break;
         }  
         
         
@@ -353,7 +353,6 @@ class HandleASession implements Runnable, UTTTConstants
                 if((cell[x][y][i][0]==gridToken) && (cell[x][y][i][1]==gridToken) && (cell[x][y][i][2]==gridToken))
                     {
                       if (bigBox[x][y]==' ') {
-                        System.out.println(x+" "+y);
                         String xCoord = Integer.toString(x+1);
                         String yCoord = Integer.toString(y+1);
                         bigCoor = xCoord.concat(yCoord);
@@ -369,7 +368,6 @@ class HandleASession implements Runnable, UTTTConstants
                 if((cell[x][y][0][j]==gridToken) && (cell[x][y][1][j]==gridToken) && (cell[x][y][2][j]==gridToken))
                     {
                       if (bigBox[x][y]==' ') {
-                        System.out.println(x+" "+y);
                         String xCoord = Integer.toString(x+1);
                         String yCoord = Integer.toString(y+1);
                         bigCoor = xCoord.concat(yCoord);
@@ -384,7 +382,6 @@ class HandleASession implements Runnable, UTTTConstants
                     if((cell[x][y][0][0]==gridToken) && (cell[x][y][1][1]==gridToken) && (cell[x][y][2][2]==gridToken))
                 {
                   if (bigBox[x][y]==' ') {
-                    System.out.println(x+" "+y);
                     String xCoord = Integer.toString(x+1);
                     String yCoord = Integer.toString(y+1);
                     bigCoor = xCoord.concat(yCoord);
@@ -399,7 +396,6 @@ class HandleASession implements Runnable, UTTTConstants
                     if((cell[x][y][0][2]==gridToken) && (cell[x][y][1][1]==gridToken) && (cell[x][y][2][0]==gridToken))
                 {
                   if (bigBox[x][y]==' ') {
-                    System.out.println(x+" "+y);
                     String xCoord = Integer.toString(x+1);
                     String yCoord = Integer.toString(y+1);
                     bigCoor = xCoord.concat(yCoord);
